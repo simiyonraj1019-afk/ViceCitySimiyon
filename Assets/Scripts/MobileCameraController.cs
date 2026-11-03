@@ -2,41 +2,54 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class MobileCameraController : MonoBehaviour,
-    IDragHandler
+public class MobileCarController : MonoBehaviour,
+    IPointerDownHandler, IPointerUpHandler
 {
-    public Transform target;
+    public ArcadeCarController car;
 
-    public float distance = 6f;
-    public float height = 3f;
-    public float sensitivity = 0.3f;
-
-    private float yaw = 0f;
-    private float pitch = 15f;
-
-    public void OnDrag(PointerEventData eventData)
+    public enum CarButton
     {
-        yaw += eventData.delta.x * sensitivity;
-        pitch -= eventData.delta.y * sensitivity;
-
-        pitch = Mathf.Clamp(pitch, -10f, 60f);
+        Accelerate,
+        Reverse,
+        Left,
+        Right
     }
 
-    void LateUpdate()
+    public CarButton buttonType;
+
+    public void OnPointerDown(PointerEventData eventData)
     {
-        if (target == null) return;
+        if (car == null) return;
 
-        Quaternion rotation =
-            Quaternion.Euler(pitch, yaw, 0);
+        switch (buttonType)
+        {
+            case CarButton.Accelerate:
+                car.SetMobileInput(1f, 0f);
+                break;
 
-        Vector3 offset = rotation *
-            new Vector3(0, height, -distance);
+            case CarButton.Reverse:
+                car.SetMobileInput(-1f, 0f);
+                break;
 
-        transform.position =
-            target.position + offset;
+            case CarButton.Left:
+                car.SetMobileInput(0f, -1f);
+                break;
 
-        transform.LookAt(
-            target.position + Vector3.up * 1.5f
-        );
+            case CarButton.Right:
+                car.SetMobileInput(0f, 1f);
+                break;
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        if (car != null)
+            car.SetMobileInput(0f, 0f);
+    }
+
+    public void Stop()
+    {
+        if (car != null)
+            car.SetMobileInput(0f, 0f);
     }
 }
